@@ -42,15 +42,16 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 	ImageIcon imgStar;
 
 	int keyEvent = KeyEvent.VK_UP; // 현재 키보드 방향
-//	int starNum = 0;
+	// int starNum = 0;
 
 	ArrayList<SnakePiece> snake = new ArrayList<SnakePiece>();
 	Star stars;
 
 	int timeCount = 0;
-
+	int countDown = 0;
+	
 	enum GameStatus {
-		CONTINUE, DONE, FAIL, SUCCESS
+		CONTINUE, DONE, FAIL, PRE_SUCCESS, SUCCESS
 	}
 
 	GameStatus gameStatus = GameStatus.CONTINUE;
@@ -114,11 +115,16 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		SnakePiece piece = null;
 		SnakePiece prePiece = null;
 
+		if (gameStatus == GameStatus.PRE_SUCCESS && countDown-- < 0) {
+			gameStatus = GameStatus.SUCCESS;
+			return false;
+		}
+
 		Point nextHeadPoint = new Point();
 		if (!snake.isEmpty()) {
 			nextHeadPoint.x = snake.get(0).pos.x;
 			nextHeadPoint.y = snake.get(0).pos.y;
-			// 머리의 다음 좌표를 설정한다.			
+			// 머리의 다음 좌표를 설정한다.
 			switch (keyEvent) {
 			case KeyEvent.VK_UP:
 				nextHeadPoint.y -= imgSnake[0].getIconHeight();
@@ -134,55 +140,67 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 				break;
 			}
 
-			// 벽과 부딪히지는 않았나?
-			if (nextHeadPoint.x < imgWall.getIconWidth() || nextHeadPoint.x > (FRAME_WIDTH - 2 * imgWall.getIconWidth())
-					|| nextHeadPoint.y < 2 * imgWall.getIconHeight()
-					|| nextHeadPoint.y > (FRAME_HEIGHT - 2 * imgWall.getIconHeight())) {
-				gameStatus = GameStatus.FAIL;
-				return false;
+			// 별 먹기를 완료한 상태에서 exit구멍으로 잘 빠져나갈 수 있을 것인가?
+			if (gameStatus == GameStatus.DONE) {
+				if (nextHeadPoint.x == 3 * imgWall.getIconWidth() && nextHeadPoint.y == imgWall.getIconHeight())
+				{
+					gameStatus = GameStatus.PRE_SUCCESS; // 넌 이미 성공했다-ㅅ-
+					countDown = snake.size(); //끝나기 전 카운트 다운.. 뱀이 다 빠져나갈때까지 시간을 계산
+				}
 			}
 
-			// 자기몸에 부딪히지는 않았나?
-			for (int i = snake.size() - 1; i > 0; i--) {
-				piece = snake.get(i);
-				if (Crash(nextHeadPoint, piece.pos, imgSnake[0].getIconWidth(), imgSnake[1].getIconWidth(),
-						imgSnake[0].getIconHeight(), imgSnake[1].getIconHeight())) {
+			if (gameStatus != GameStatus.PRE_SUCCESS) {
+				// 벽과 부딪히지는 않았나?
+				if (nextHeadPoint.x < imgWall.getIconWidth()
+						|| nextHeadPoint.x > (FRAME_WIDTH - 2 * imgWall.getIconWidth())
+						|| nextHeadPoint.y < 2 * imgWall.getIconHeight()
+						|| nextHeadPoint.y > (FRAME_HEIGHT - 2 * imgWall.getIconHeight())) {
 					gameStatus = GameStatus.FAIL;
 					return false;
 				}
-			}
 
-			// 별을 먹을 수 있는가?
-			if (Crash(nextHeadPoint, stars.pos, imgSnake[1].getIconWidth(), imgSnake[1].getIconHeight(),
-					imgStar.getIconWidth(), imgStar.getIconHeight())) {
-				// 몸의 길이를 추가한다.
-				snake.add(new SnakePiece(0, 0));
+				// 자기몸에 부딪히지는 않았나?
+				for (int i = snake.size() - 1; i > 0; i--) {
+					piece = snake.get(i);
+					if (Crash(nextHeadPoint, piece.pos, imgSnake[0].getIconWidth(), imgSnake[1].getIconWidth(),
+							imgSnake[0].getIconHeight(), imgSnake[1].getIconHeight())) {
+						gameStatus = GameStatus.FAIL;
+						return false;
+					}
+				}
 
-				// 원래 있던 별은 없어지고 새로운 별이 생긴다.
-				stars.replace();
+				// 별을 먹을 수 있는가?
+				if (Crash(nextHeadPoint, stars.pos, imgSnake[1].getIconWidth(), imgSnake[1].getIconHeight(),
+						imgStar.getIconWidth(), imgStar.getIconHeight())) {
+					// 몸의 길이를 추가한다.
+					snake.add(new SnakePiece(0, 0));
 
-				// 먹은 뱀의 숫자가 늘어난다.
-				if (stars.addAndCheck()) // 10개를 다 먹어서 성공한 경우
-				{
-					gameStatus = GameStatus.DONE;
-					stars.setCompleteTimeCount(timeCount);
-					return false;
+					// 원래 있던 별은 없어지고 새로운 별이 생긴다.
+					stars.replace();
+
+					// 먹은 뱀의 숫자가 늘어난다.
+					if (stars.addAndCheck()) // 10개를 다 먹어서 성공한 경우
+					{
+						gameStatus = GameStatus.DONE;
+						stars.setCompleteTimeCount(timeCount);
+						return false;
+					}
 				}
 			}
-		}
 
-		// 뱀 몸 움직이기
-		for (int i = snake.size() - 1; i >= 0; i--) {
-			piece = snake.get(i);
+			// 뱀 몸 움직이기
+			for (int i = snake.size() - 1; i >= 0; i--) {
+				piece = snake.get(i);
 
-			if (0 == i) {
-				piece.pos.x = nextHeadPoint.x;
-				piece.pos.y = nextHeadPoint.y;
-			} else {
-				prePiece = snake.get(i - 1);
+				if (0 == i) {
+					piece.pos.x = nextHeadPoint.x;
+					piece.pos.y = nextHeadPoint.y;
+				} else {
+					prePiece = snake.get(i - 1);
 
-				piece.pos.x = prePiece.pos.x;
-				piece.pos.y = prePiece.pos.y;
+					piece.pos.x = prePiece.pos.x;
+					piece.pos.y = prePiece.pos.y;
+				}
 			}
 		}
 
@@ -224,7 +242,7 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		for (int j = 0; j < xCount; j++)
 			buffg.drawImage(imgWall.getImage(), 0, wallHeight * j, this);
 
-		//초기 화면: 한쪽 벽이 열리면서 뱀이 등장하고 벽이 다치는 화면효과
+		// 초기 화면: 한쪽 벽이 열리면서 뱀이 등장하고 벽이 다치는 화면효과
 		switch (timeCount) {
 		case 1:
 		case 2:
@@ -248,16 +266,13 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 			break;
 		}
 
-		if(gameStatus == GameStatus.CONTINUE)
-		{
+		if (gameStatus == GameStatus.CONTINUE) {
 			// 별을 그린다.
 			buffg.drawImage(imgStar.getImage(), stars.pos.x, stars.pos.y, this);
+		} else if (gameStatus == GameStatus.DONE) {
+			buffg.clearRect(3 * imgWall.getIconWidth(), imgWall.getIconHeight(), imgWall.getIconWidth(),
+					imgWall.getIconHeight());
 		}
-		else if(gameStatus == GameStatus.DONE)
-		{
-			buffg.clearRect(3 * imgWall.getIconWidth(), imgWall.getIconHeight(),
-					imgWall.getIconWidth(), imgWall.getIconHeight());
-		}	
 
 		// 뱀을 그린다.
 		int snakeLength = snake.size();
@@ -350,11 +365,11 @@ class Star {
 	final int startY; // 별이 있을 수 있는 공간을 네모로 표시할 때 시작되는 점의 y좌표.
 	final int width; // 별이 있을 수 있는 공간을 네모로 표시할 때 네모의 가로 길이
 	final int height; // 별이 있을 수 있는 공간을 네모로 표시할 때 네모의 세로 길이
-	
-	final int MAX_STAR_NUM = 3; 
-	int successNum; //먹힌 별의 수 (성공한 갯수)
-	int completeTimeCount; //최대 별의 갯수를 먹는 것을 성공하였을때 타임카운트
-	
+
+	final int MAX_STAR_NUM = 3;
+	int successNum; // 먹힌 별의 수 (성공한 갯수)
+	int completeTimeCount; // 최대 별의 갯수를 먹는 것을 성공하였을때 타임카운트
+
 	Star(int startX, int startY, int width, int height) {
 		pos = new Point(0, 0);
 
@@ -370,27 +385,25 @@ class Star {
 		pos.x = (int) (Math.random() * width) + startX;
 		pos.y = (int) (Math.random() * height) + startY;
 	}
-	
+
 	public boolean addAndCheck() {
 		successNum++;
-		if(successNum < MAX_STAR_NUM)
+		if (successNum < MAX_STAR_NUM)
 			return false;
-		
+
 		return true;
 	}
-	
+
 	public int getStarNum() {
 		return successNum;
 	}
-	
-	public boolean setCompleteTimeCount(int timeCount)
-	{
+
+	public boolean setCompleteTimeCount(int timeCount) {
 		completeTimeCount = timeCount;
 		return true;
 	}
-	
-	public int getCompleteTimeCount()
-	{
+
+	public int getCompleteTimeCount() {
 		return completeTimeCount;
 	}
 }
