@@ -27,6 +27,8 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 	 */
 	private static final long serialVersionUID = 1L;
 
+	private static final int TIME_INTERVAL = 500;
+
 	int FRAME_WIDTH; // 정해진 넓이
 	int FRAME_HEIGHT; // 정해진 높이
 
@@ -40,14 +42,17 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 	ImageIcon imgStar;
 
 	int keyEvent = KeyEvent.VK_UP; // 현재 키보드 방향
-	int starNum = 0;
+//	int starNum = 0;
 
 	ArrayList<SnakePiece> snake = new ArrayList<SnakePiece>();
 	Star stars;
 
+	int timeCount = 0;
+
 	enum GameStatus {
-		CONTINUE, FAIL, SUCCESS
+		CONTINUE, DONE, FAIL, SUCCESS
 	}
+
 	GameStatus gameStatus = GameStatus.CONTINUE;
 
 	public boolean InitVariable() {
@@ -64,15 +69,9 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		FRAME_WIDTH = imgWall.getIconWidth() * 30;
 		FRAME_HEIGHT = imgWall.getIconWidth() * 30;
 
-		// 뱀의 초반 위치를 지정해준다.
-		snake.add(new SnakePiece(FRAME_WIDTH - 3 * imgWall.getIconWidth(), FRAME_HEIGHT - 4 * imgWall.getIconHeight()));
-		snake.add(new SnakePiece(FRAME_WIDTH - 3 * imgWall.getIconWidth(), FRAME_HEIGHT - 3 * imgWall.getIconHeight()));
-		snake.add(new SnakePiece(FRAME_WIDTH - 3 * imgWall.getIconWidth(), FRAME_HEIGHT - 2 * imgWall.getIconHeight()));
-
 		// 별의 초반 위치를 지정해준다.
-		stars = new Star(imgWall.getIconWidth(), 2*imgWall.getIconHeight()
-				, FRAME_WIDTH - 3 * imgWall.getIconWidth()
-				, FRAME_HEIGHT - 3 * imgWall.getIconHeight());
+		stars = new Star(imgWall.getIconWidth(), 2 * imgWall.getIconHeight(), FRAME_WIDTH - 3 * imgWall.getIconWidth(),
+				FRAME_HEIGHT - 3 * imgWall.getIconHeight());
 
 		return true;
 	}
@@ -83,7 +82,7 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension screen = tk.getScreenSize();
-		setLocation((int) (screen.getWidth() / 2 - FRAME_WIDTH / 2), (int) (screen.getWidth() / 2 - FRAME_HEIGHT / 2));
+		setLocation((int) (screen.getWidth() / 2 - FRAME_WIDTH / 2), (int) (screen.getHeight() / 2 - FRAME_HEIGHT / 2));
 
 		setResizable(false);
 		setVisible(true);
@@ -115,56 +114,60 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		SnakePiece piece = null;
 		SnakePiece prePiece = null;
 
-		//머리의 다음 좌표를 설정한다.
-		Point nextHeadPoint = new Point(snake.get(0).pos);
-		switch (keyEvent) {
-		case KeyEvent.VK_UP:
-			nextHeadPoint.y -= imgSnake[0].getIconHeight();
-			break;
-		case KeyEvent.VK_DOWN:
-			nextHeadPoint.y += imgSnake[0].getIconHeight();
-			break;
-		case KeyEvent.VK_RIGHT:
-			nextHeadPoint.x += imgSnake[0].getIconWidth();
-			break;
-		case KeyEvent.VK_LEFT:
-			nextHeadPoint.x -= imgSnake[0].getIconWidth();
-			break;
-		}
-		
-		// 벽과 부딪히지는 않았나?
-		if (nextHeadPoint.x < imgWall.getIconWidth() || nextHeadPoint.x > (FRAME_WIDTH - 2 * imgWall.getIconWidth())
-				|| nextHeadPoint.y < 2 * imgWall.getIconHeight()
-				|| nextHeadPoint.y > (FRAME_HEIGHT - 2 * imgWall.getIconHeight())) {
-			gameStatus = GameStatus.FAIL;
-			return false;
-		}
+		Point nextHeadPoint = new Point();
+		if (!snake.isEmpty()) {
+			nextHeadPoint.x = snake.get(0).pos.x;
+			nextHeadPoint.y = snake.get(0).pos.y;
+			// 머리의 다음 좌표를 설정한다.			
+			switch (keyEvent) {
+			case KeyEvent.VK_UP:
+				nextHeadPoint.y -= imgSnake[0].getIconHeight();
+				break;
+			case KeyEvent.VK_DOWN:
+				nextHeadPoint.y += imgSnake[0].getIconHeight();
+				break;
+			case KeyEvent.VK_RIGHT:
+				nextHeadPoint.x += imgSnake[0].getIconWidth();
+				break;
+			case KeyEvent.VK_LEFT:
+				nextHeadPoint.x -= imgSnake[0].getIconWidth();
+				break;
+			}
 
-		// 자기몸에 부딪히지는 않았나?
-		for (int i = snake.size() - 1; i > 0; i--) {
-			piece = snake.get(i);
-			if (Crash(nextHeadPoint, piece.pos, imgSnake[0].getIconWidth(), imgSnake[1].getIconWidth(),
-					imgSnake[0].getIconHeight(), imgSnake[1].getIconHeight())) {
+			// 벽과 부딪히지는 않았나?
+			if (nextHeadPoint.x < imgWall.getIconWidth() || nextHeadPoint.x > (FRAME_WIDTH - 2 * imgWall.getIconWidth())
+					|| nextHeadPoint.y < 2 * imgWall.getIconHeight()
+					|| nextHeadPoint.y > (FRAME_HEIGHT - 2 * imgWall.getIconHeight())) {
 				gameStatus = GameStatus.FAIL;
 				return false;
 			}
-		}
-		
-		// 별을 먹을 수 있는가?
-		if (Crash(nextHeadPoint, stars.pos, imgSnake[1].getIconWidth(), imgSnake[1].getIconHeight(),
-				imgStar.getIconWidth(), imgStar.getIconHeight())) {
-			// 몸의 길이를 추가한다.
-			snake.add(new SnakePiece(0, 0));
 
-			// 원래 있던 별은 없어지고 새로운 별이 생긴다.
-			stars.replace();
+			// 자기몸에 부딪히지는 않았나?
+			for (int i = snake.size() - 1; i > 0; i--) {
+				piece = snake.get(i);
+				if (Crash(nextHeadPoint, piece.pos, imgSnake[0].getIconWidth(), imgSnake[1].getIconWidth(),
+						imgSnake[0].getIconHeight(), imgSnake[1].getIconHeight())) {
+					gameStatus = GameStatus.FAIL;
+					return false;
+				}
+			}
 
-			// 먹은 뱀의 숫자가 늘어난다.
-			starNum++;
-			if (starNum > 10) // 10개를 다 먹어서 성공한 경우
-			{
-				gameStatus = GameStatus.SUCCESS;
-				return false;
+			// 별을 먹을 수 있는가?
+			if (Crash(nextHeadPoint, stars.pos, imgSnake[1].getIconWidth(), imgSnake[1].getIconHeight(),
+					imgStar.getIconWidth(), imgStar.getIconHeight())) {
+				// 몸의 길이를 추가한다.
+				snake.add(new SnakePiece(0, 0));
+
+				// 원래 있던 별은 없어지고 새로운 별이 생긴다.
+				stars.replace();
+
+				// 먹은 뱀의 숫자가 늘어난다.
+				if (stars.addAndCheck()) // 10개를 다 먹어서 성공한 경우
+				{
+					gameStatus = GameStatus.DONE;
+					stars.setCompleteTimeCount(timeCount);
+					return false;
+				}
 			}
 		}
 
@@ -221,8 +224,40 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		for (int j = 0; j < xCount; j++)
 			buffg.drawImage(imgWall.getImage(), 0, wallHeight * j, this);
 
-		// 별을 그린다.
-		buffg.drawImage(imgStar.getImage(), stars.pos.x, stars.pos.y, this);
+		//초기 화면: 한쪽 벽이 열리면서 뱀이 등장하고 벽이 다치는 화면효과
+		switch (timeCount) {
+		case 1:
+		case 2:
+		case 3:
+			buffg.clearRect(FRAME_WIDTH - 5 * imgWall.getIconWidth(), FRAME_HEIGHT - imgWall.getIconHeight(),
+					imgWall.getIconWidth() * timeCount, imgWall.getIconHeight());
+			break;
+		case 4:
+		case 5:
+		case 6:
+			buffg.clearRect(FRAME_WIDTH - 5 * imgWall.getIconWidth(), FRAME_HEIGHT - imgWall.getIconHeight(),
+					imgWall.getIconWidth() * 3, imgWall.getIconHeight());
+			// 뱀의 초반 위치를 지정해준다.
+			snake.add(new SnakePiece(FRAME_WIDTH - 4 * imgWall.getIconWidth(), FRAME_HEIGHT - imgWall.getIconHeight()));
+			break;
+		case 7:
+		case 8:
+		case 9:
+			buffg.clearRect(FRAME_WIDTH - 5 * imgWall.getIconWidth(), FRAME_HEIGHT - imgWall.getIconHeight(),
+					imgWall.getIconWidth() * (10 - timeCount), imgWall.getIconHeight());
+			break;
+		}
+
+		if(gameStatus == GameStatus.CONTINUE)
+		{
+			// 별을 그린다.
+			buffg.drawImage(imgStar.getImage(), stars.pos.x, stars.pos.y, this);
+		}
+		else if(gameStatus == GameStatus.DONE)
+		{
+			buffg.clearRect(3 * imgWall.getIconWidth(), imgWall.getIconHeight(),
+					imgWall.getIconWidth(), imgWall.getIconHeight());
+		}	
 
 		// 뱀을 그린다.
 		int snakeLength = snake.size();
@@ -237,8 +272,9 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		}
 
 		// 점수판을 그린다.
-		buffg.drawString("STAR : " + starNum, 50, 70);
-		buffg.drawString("뱀 머리 x : " + snake.get(0).pos.x + ", y : " + snake.get(0).pos.y, 50, 90);
+		buffg.drawString("STAR : " + stars.getStarNum(), 50, 70);
+		if (!snake.isEmpty())
+			buffg.drawString("뱀 머리 x : " + snake.get(0).pos.x + ", y : " + snake.get(0).pos.y, 50, 90);
 
 		switch (gameStatus) {
 		case SUCCESS:
@@ -259,20 +295,20 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 	public void run() {
 		try {
 			while (true) {
+				timeCount++;
+
 				// 현재 상황을 체크하고 변경된 상황에 대하여 저장한다.
 				DealWithKeyInput();
 
 				// 변경된 상황을 그려준다.
 				repaint();
 
-				if (gameStatus != GameStatus.CONTINUE)
+				if (gameStatus == GameStatus.SUCCESS || gameStatus == GameStatus.FAIL)
 					break;
 				// 20ms 간격으로 반복한다.
-				Thread.sleep(500);
+				Thread.sleep(TIME_INTERVAL);
 			}
 		} catch (Exception e) {
-			Alert alert = new Alert(AlertType.ERROR, "예외가 발생하였습니다.", ButtonType.CLOSE);
-			alert.show();
 		}
 	}
 
@@ -314,7 +350,11 @@ class Star {
 	final int startY; // 별이 있을 수 있는 공간을 네모로 표시할 때 시작되는 점의 y좌표.
 	final int width; // 별이 있을 수 있는 공간을 네모로 표시할 때 네모의 가로 길이
 	final int height; // 별이 있을 수 있는 공간을 네모로 표시할 때 네모의 세로 길이
-
+	
+	final int MAX_STAR_NUM = 3; 
+	int successNum; //먹힌 별의 수 (성공한 갯수)
+	int completeTimeCount; //최대 별의 갯수를 먹는 것을 성공하였을때 타임카운트
+	
 	Star(int startX, int startY, int width, int height) {
 		pos = new Point(0, 0);
 
@@ -329,5 +369,28 @@ class Star {
 	public void replace() {
 		pos.x = (int) (Math.random() * width) + startX;
 		pos.y = (int) (Math.random() * height) + startY;
+	}
+	
+	public boolean addAndCheck() {
+		successNum++;
+		if(successNum < MAX_STAR_NUM)
+			return false;
+		
+		return true;
+	}
+	
+	public int getStarNum() {
+		return successNum;
+	}
+	
+	public boolean setCompleteTimeCount(int timeCount)
+	{
+		completeTimeCount = timeCount;
+		return true;
+	}
+	
+	public int getCompleteTimeCount()
+	{
+		return completeTimeCount;
 	}
 }
