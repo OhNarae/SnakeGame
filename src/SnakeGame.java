@@ -29,8 +29,8 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 
 	private static final int TIME_INTERVAL = 500;
 
-	int FRAME_WIDTH; // Á¤ÇØÁø ³ĞÀÌ
-	int FRAME_HEIGHT; // Á¤ÇØÁø ³ôÀÌ
+	int FRAME_WIDTH; // ì •í•´ì§„ ë„“ì´
+	int FRAME_HEIGHT; // ì •í•´ì§„ ë†’ì´
 
 	Thread th;
 
@@ -41,7 +41,7 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 	ImageIcon imgWall;
 	ImageIcon imgStar;
 
-	int keyEvent = KeyEvent.VK_UP; // ÇöÀç Å°º¸µå ¹æÇâ
+	int keyEvent = KeyEvent.VK_UP; // í˜„ì¬ í‚¤ë³´ë“œ ë°©í–¥
 	// int starNum = 0;
 
 	ArrayList<SnakePiece> snake = new ArrayList<SnakePiece>();
@@ -57,7 +57,7 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 	GameStatus gameStatus = GameStatus.CONTINUE;
 
 	public boolean InitVariable() {
-		// ÀÌ¹ÌÁöµéÀ» ÁöÁ¤ÇÑ´Ù.
+		// ì´ë¯¸ì§€ë“¤ì„ ì§€ì •í•œë‹¤.
 		imgSnake = new ImageIcon[3];
 		for (int i = 0; i < imgSnake.length; ++i) {
 			imgSnake[i] = new ImageIcon(GameFrame.class.getClassLoader().getResource("Snake_" + i + ".png"), "");
@@ -66,11 +66,11 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		imgWall = new ImageIcon(GameFrame.class.getClassLoader().getResource("Wall.png"), "");
 		imgStar = new ImageIcon(GameFrame.class.getClassLoader().getResource("Star.png"), "");
 
-		// È­¸éÀÇ Å©±â¸¦ Á¤ÇØÁØ´Ù. º®ÀÇ ±æÀÌÀÇ ¹è¼ö¿¡ ¸ÂÃß¾î ÁØ´Ù.
+		// í™”ë©´ì˜ í¬ê¸°ë¥¼ ì •í•´ì¤€ë‹¤. ë²½ì˜ ê¸¸ì´ì˜ ë°°ìˆ˜ì— ë§ì¶”ì–´ ì¤€ë‹¤.
 		FRAME_WIDTH = imgWall.getIconWidth() * 30;
 		FRAME_HEIGHT = imgWall.getIconWidth() * 30;
 
-		// º°ÀÇ ÃÊ¹İ À§Ä¡¸¦ ÁöÁ¤ÇØÁØ´Ù.
+		// ë³„ì˜ ì´ˆë°˜ ìœ„ì¹˜ë¥¼ ì§€ì •í•´ì¤€ë‹¤.
 		stars = new Star(imgWall.getIconWidth(), 2 * imgWall.getIconHeight(), FRAME_WIDTH - 3 * imgWall.getIconWidth(),
 				FRAME_HEIGHT - 3 * imgWall.getIconHeight());
 
@@ -78,7 +78,7 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 	}
 
 	public boolean InitScreen() {
-		setTitle("º° ¸Ô´Â ¹ì");
+		setTitle("ë³„ ë¨¹ëŠ” ë±€");
 		setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
 		Toolkit tk = Toolkit.getDefaultToolkit();
@@ -110,7 +110,7 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		return true;
 	}
 
-	// Å°º¸µå Á¶ÀÛ¿¡ µû¸¥ º¯°æÀ» Ã¼Å©ÇÏ°í °¢ »óÅÂ°ªµéÀ» º¯°æ½ÃÅ²´Ù.
+	// í‚¤ë³´ë“œ ì¡°ì‘ì— ë”°ë¥¸ ë³€ê²½ì„ ì²´í¬í•˜ê³  ê° ìƒíƒœê°’ë“¤ì„ ë³€ê²½ì‹œí‚¨ë‹¤.
 	public boolean DealWithKeyInput() {
 		SnakePiece piece = null;
 		SnakePiece prePiece = null;
@@ -124,7 +124,7 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		if (!snake.isEmpty()) {
 			nextHeadPoint.x = snake.get(0).pos.x;
 			nextHeadPoint.y = snake.get(0).pos.y;
-			// ¸Ó¸®ÀÇ ´ÙÀ½ ÁÂÇ¥¸¦ ¼³Á¤ÇÑ´Ù.
+			// ë¨¸ë¦¬ì˜ ë‹¤ìŒ ì¢Œí‘œë¥¼ ì„¤ì •í•œë‹¤.
 			switch (keyEvent) {
 			case KeyEvent.VK_UP:
 				nextHeadPoint.y -= imgSnake[0].getIconHeight();
@@ -140,17 +140,17 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 				break;
 			}
 
-			// º° ¸Ô±â¸¦ ¿Ï·áÇÑ »óÅÂ¿¡¼­ exit±¸¸ÛÀ¸·Î Àß ºüÁ®³ª°¥ ¼ö ÀÖÀ» °ÍÀÎ°¡?
+			// ë³„ ë¨¹ê¸°ë¥¼ ì™„ë£Œí•œ ìƒíƒœì—ì„œ exitêµ¬ë©ìœ¼ë¡œ ì˜ ë¹ ì ¸ë‚˜ê°ˆ ìˆ˜ ìˆì„ ê²ƒì¸ê°€?
 			if (gameStatus == GameStatus.DONE) {
 				if (nextHeadPoint.x == 3 * imgWall.getIconWidth() && nextHeadPoint.y == imgWall.getIconHeight())
 				{
-					gameStatus = GameStatus.PRE_SUCCESS; // ³Í ÀÌ¹Ì ¼º°øÇß´Ù-¤µ-
-					countDown = snake.size(); //³¡³ª±â Àü Ä«¿îÆ® ´Ù¿î.. ¹ìÀÌ ´Ù ºüÁ®³ª°¥¶§±îÁö ½Ã°£À» °è»ê
+					gameStatus = GameStatus.PRE_SUCCESS; // ë„Œ ì´ë¯¸ ì„±ê³µí–ˆë‹¤-ã……-
+					countDown = snake.size(); //ëë‚˜ê¸° ì „ ì¹´ìš´íŠ¸ ë‹¤ìš´.. ë±€ì´ ë‹¤ ë¹ ì ¸ë‚˜ê°ˆë•Œê¹Œì§€ ì‹œê°„ì„ ê³„ì‚°
 				}
 			}
 
 			if (gameStatus != GameStatus.PRE_SUCCESS) {
-				// º®°ú ºÎµúÈ÷Áö´Â ¾Ê¾Ò³ª?
+				// ë²½ê³¼ ë¶€ë”ªíˆì§€ëŠ” ì•Šì•˜ë‚˜?
 				if (nextHeadPoint.x < imgWall.getIconWidth()
 						|| nextHeadPoint.x > (FRAME_WIDTH - 2 * imgWall.getIconWidth())
 						|| nextHeadPoint.y < 2 * imgWall.getIconHeight()
@@ -159,7 +159,7 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 					return false;
 				}
 
-				// ÀÚ±â¸ö¿¡ ºÎµúÈ÷Áö´Â ¾Ê¾Ò³ª?
+				// ìê¸°ëª¸ì— ë¶€ë”ªíˆì§€ëŠ” ì•Šì•˜ë‚˜?
 				for (int i = snake.size() - 1; i > 0; i--) {
 					piece = snake.get(i);
 					if (Crash(nextHeadPoint, piece.pos, imgSnake[0].getIconWidth(), imgSnake[1].getIconWidth(),
@@ -169,17 +169,17 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 					}
 				}
 
-				// º°À» ¸ÔÀ» ¼ö ÀÖ´Â°¡?
+				// ë³„ì„ ë¨¹ì„ ìˆ˜ ìˆëŠ”ê°€?
 				if (Crash(nextHeadPoint, stars.pos, imgSnake[1].getIconWidth(), imgSnake[1].getIconHeight(),
 						imgStar.getIconWidth(), imgStar.getIconHeight())) {
-					// ¸öÀÇ ±æÀÌ¸¦ Ãß°¡ÇÑ´Ù.
+					// ëª¸ì˜ ê¸¸ì´ë¥¼ ì¶”ê°€í•œë‹¤.
 					snake.add(new SnakePiece(0, 0));
 
-					// ¿ø·¡ ÀÖ´ø º°Àº ¾ø¾îÁö°í »õ·Î¿î º°ÀÌ »ı±ä´Ù.
+					// ì›ë˜ ìˆë˜ ë³„ì€ ì—†ì–´ì§€ê³  ìƒˆë¡œìš´ ë³„ì´ ìƒê¸´ë‹¤.
 					stars.replace();
 
-					// ¸ÔÀº ¹ìÀÇ ¼ıÀÚ°¡ ´Ã¾î³­´Ù.
-					if (stars.addAndCheck()) // 10°³¸¦ ´Ù ¸Ô¾î¼­ ¼º°øÇÑ °æ¿ì
+					// ë¨¹ì€ ë±€ì˜ ìˆ«ìê°€ ëŠ˜ì–´ë‚œë‹¤.
+					if (stars.addAndCheck()) // 10ê°œë¥¼ ë‹¤ ë¨¹ì–´ì„œ ì„±ê³µí•œ ê²½ìš°
 					{
 						gameStatus = GameStatus.DONE;
 						stars.setCompleteTimeCount(timeCount);
@@ -188,7 +188,7 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 				}
 			}
 
-			// ¹ì ¸ö ¿òÁ÷ÀÌ±â
+			// ë±€ ëª¸ ì›€ì§ì´ê¸°
 			for (int i = snake.size() - 1; i >= 0; i--) {
 				piece = snake.get(i);
 
@@ -220,29 +220,29 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		buffImage = createImage(FRAME_WIDTH, FRAME_HEIGHT);
 		buffg = buffImage.getGraphics();
 
-		// È­¸é ¹öÆÛ¸¦ Áö¿î´Ù.
+		// í™”ë©´ ë²„í¼ë¥¼ ì§€ìš´ë‹¤.
 		buffg.clearRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 
-		// º®À» ±×¸°´Ù.
+		// ë²½ì„ ê·¸ë¦°ë‹¤.
 		int wallWidth = imgWall.getIconWidth();
 		int wallHeight = imgWall.getIconHeight();
 
 		int xCount = FRAME_WIDTH / wallWidth;
 		int yCount = FRAME_HEIGHT / wallHeight;
-		// À§ °¡·Î º®
+		// ìœ„ ê°€ë¡œ ë²½
 		for (int j = 0; j < xCount; j++)
 			buffg.drawImage(imgWall.getImage(), wallWidth * j, wallHeight, this);
-		// ¿À¸¥ÂÊ ¼¼·Î º®
+		// ì˜¤ë¥¸ìª½ ì„¸ë¡œ ë²½
 		for (int j = 0; j < yCount; j++)
 			buffg.drawImage(imgWall.getImage(), wallWidth * (xCount - 1), wallHeight * j, this);
-		// ¾Æ·¡ °¡·Î º®
+		// ì•„ë˜ ê°€ë¡œ ë²½
 		for (int j = 0; j < xCount; j++)
 			buffg.drawImage(imgWall.getImage(), wallWidth * j, wallHeight * (yCount - 1), this);
-		// ¿ŞÂÊ ¼¼·Î º®
+		// ì™¼ìª½ ì„¸ë¡œ ë²½
 		for (int j = 0; j < xCount; j++)
 			buffg.drawImage(imgWall.getImage(), 0, wallHeight * j, this);
 
-		// ÃÊ±â È­¸é: ÇÑÂÊ º®ÀÌ ¿­¸®¸é¼­ ¹ìÀÌ µîÀåÇÏ°í º®ÀÌ ´ÙÄ¡´Â È­¸éÈ¿°ú
+		// ì´ˆê¸° í™”ë©´: í•œìª½ ë²½ì´ ì—´ë¦¬ë©´ì„œ ë±€ì´ ë“±ì¥í•˜ê³  ë²½ì´ ë‹¤ì¹˜ëŠ” í™”ë©´íš¨ê³¼
 		switch (timeCount) {
 		case 1:
 		case 2:
@@ -255,7 +255,7 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		case 6:
 			buffg.clearRect(FRAME_WIDTH - 5 * imgWall.getIconWidth(), FRAME_HEIGHT - imgWall.getIconHeight(),
 					imgWall.getIconWidth() * 3, imgWall.getIconHeight());
-			// ¹ìÀÇ ÃÊ¹İ À§Ä¡¸¦ ÁöÁ¤ÇØÁØ´Ù.
+			// ë±€ì˜ ì´ˆë°˜ ìœ„ì¹˜ë¥¼ ì§€ì •í•´ì¤€ë‹¤.
 			snake.add(new SnakePiece(FRAME_WIDTH - 4 * imgWall.getIconWidth(), FRAME_HEIGHT - imgWall.getIconHeight()));
 			break;
 		case 7:
@@ -267,14 +267,14 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		}
 
 		if (gameStatus == GameStatus.CONTINUE) {
-			// º°À» ±×¸°´Ù.
+			// ë³„ì„ ê·¸ë¦°ë‹¤.
 			buffg.drawImage(imgStar.getImage(), stars.pos.x, stars.pos.y, this);
 		} else if (gameStatus == GameStatus.DONE) {
 			buffg.clearRect(3 * imgWall.getIconWidth(), imgWall.getIconHeight(), imgWall.getIconWidth(),
 					imgWall.getIconHeight());
 		}
 
-		// ¹ìÀ» ±×¸°´Ù.
+		// ë±€ì„ ê·¸ë¦°ë‹¤.
 		int snakeLength = snake.size();
 		for (int i = 0; i < snakeLength; i++) {
 			SnakePiece piece = (SnakePiece) snake.get(i);
@@ -286,17 +286,17 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 				buffg.drawImage(imgSnake[1].getImage(), piece.pos.x, piece.pos.y, this);
 		}
 
-		// Á¡¼öÆÇÀ» ±×¸°´Ù.
+		// ì ìˆ˜íŒì„ ê·¸ë¦°ë‹¤.
 		buffg.drawString("STAR : " + stars.getStarNum(), 50, 70);
 		if (!snake.isEmpty())
-			buffg.drawString("¹ì ¸Ó¸® x : " + snake.get(0).pos.x + ", y : " + snake.get(0).pos.y, 50, 90);
+			buffg.drawString("ë±€ ë¨¸ë¦¬ x : " + snake.get(0).pos.x + ", y : " + snake.get(0).pos.y, 50, 90);
 
 		switch (gameStatus) {
 		case SUCCESS:
 			buffg.drawString("SUCCESS!! *(^0^)*", FRAME_WIDTH / 2, FRAME_HEIGHT / 2);
 			break;
 		case FAIL:
-			buffg.drawString("FAIL! -¤±-)/", FRAME_WIDTH / 2, FRAME_HEIGHT / 2);
+			buffg.drawString("FAIL! -ã…-)/", FRAME_WIDTH / 2, FRAME_HEIGHT / 2);
 			break;
 		case CONTINUE:
 			break;
@@ -312,15 +312,15 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 			while (true) {
 				timeCount++;
 
-				// ÇöÀç »óÈ²À» Ã¼Å©ÇÏ°í º¯°æµÈ »óÈ²¿¡ ´ëÇÏ¿© ÀúÀåÇÑ´Ù.
+				// í˜„ì¬ ìƒí™©ì„ ì²´í¬í•˜ê³  ë³€ê²½ëœ ìƒí™©ì— ëŒ€í•˜ì—¬ ì €ì¥í•œë‹¤.
 				DealWithKeyInput();
 
-				// º¯°æµÈ »óÈ²À» ±×·ÁÁØ´Ù.
+				// ë³€ê²½ëœ ìƒí™©ì„ ê·¸ë ¤ì¤€ë‹¤.
 				repaint();
 
 				if (gameStatus == GameStatus.SUCCESS || gameStatus == GameStatus.FAIL)
 					break;
-				// 20ms °£°İÀ¸·Î ¹İº¹ÇÑ´Ù.
+				// 20ms ê°„ê²©ìœ¼ë¡œ ë°˜ë³µí•œë‹¤.
 				Thread.sleep(TIME_INTERVAL);
 			}
 		} catch (Exception e) {
@@ -332,7 +332,10 @@ class GameFrame extends JFrame implements KeyListener, Runnable {
 		// TODO Auto-generated method stub
 		int nowKey = e.getKeyCode();
 
-		if (nowKey == KeyEvent.VK_DOWN && keyEvent == KeyEvent.VK_UP)
+		if ((nowKey == KeyEvent.VK_DOWN && keyEvent == KeyEvent.VK_UP)
+				|| (nowKey == KeyEvent.VK_UP && keyEvent == KeyEvent.VK_DOWN)
+				|| (nowKey == KeyEvent.VK_LEFT && keyEvent == KeyEvent.VK_RIGHT)
+				|| (nowKey == KeyEvent.VK_RIGHT && keyEvent == KeyEvent.VK_LEFT))
 			return;
 
 		keyEvent = e.getKeyCode();
@@ -361,14 +364,14 @@ class SnakePiece {
 class Star {
 	Point pos;
 
-	final int startX; // º°ÀÌ ÀÖÀ» ¼ö ÀÖ´Â °ø°£À» ³×¸ğ·Î Ç¥½ÃÇÒ ¶§ ½ÃÀÛµÇ´Â Á¡ÀÇ xÁÂÇ¥.
-	final int startY; // º°ÀÌ ÀÖÀ» ¼ö ÀÖ´Â °ø°£À» ³×¸ğ·Î Ç¥½ÃÇÒ ¶§ ½ÃÀÛµÇ´Â Á¡ÀÇ yÁÂÇ¥.
-	final int width; // º°ÀÌ ÀÖÀ» ¼ö ÀÖ´Â °ø°£À» ³×¸ğ·Î Ç¥½ÃÇÒ ¶§ ³×¸ğÀÇ °¡·Î ±æÀÌ
-	final int height; // º°ÀÌ ÀÖÀ» ¼ö ÀÖ´Â °ø°£À» ³×¸ğ·Î Ç¥½ÃÇÒ ¶§ ³×¸ğÀÇ ¼¼·Î ±æÀÌ
+	final int startX; // ë³„ì´ ìˆì„ ìˆ˜ ìˆëŠ” ê³µê°„ì„ ë„¤ëª¨ë¡œ í‘œì‹œí•  ë•Œ ì‹œì‘ë˜ëŠ” ì ì˜ xì¢Œí‘œ.
+	final int startY; // ë³„ì´ ìˆì„ ìˆ˜ ìˆëŠ” ê³µê°„ì„ ë„¤ëª¨ë¡œ í‘œì‹œí•  ë•Œ ì‹œì‘ë˜ëŠ” ì ì˜ yì¢Œí‘œ.
+	final int width; // ë³„ì´ ìˆì„ ìˆ˜ ìˆëŠ” ê³µê°„ì„ ë„¤ëª¨ë¡œ í‘œì‹œí•  ë•Œ ë„¤ëª¨ì˜ ê°€ë¡œ ê¸¸ì´
+	final int height; // ë³„ì´ ìˆì„ ìˆ˜ ìˆëŠ” ê³µê°„ì„ ë„¤ëª¨ë¡œ í‘œì‹œí•  ë•Œ ë„¤ëª¨ì˜ ì„¸ë¡œ ê¸¸ì´
 
 	final int MAX_STAR_NUM = 3;
-	int successNum; // ¸ÔÈù º°ÀÇ ¼ö (¼º°øÇÑ °¹¼ö)
-	int completeTimeCount; // ÃÖ´ë º°ÀÇ °¹¼ö¸¦ ¸Ô´Â °ÍÀ» ¼º°øÇÏ¿´À»¶§ Å¸ÀÓÄ«¿îÆ®
+	int successNum; // ë¨¹íŒ ë³„ì˜ ìˆ˜ (ì„±ê³µí•œ ê°¯ìˆ˜)
+	int completeTimeCount; // ìµœëŒ€ ë³„ì˜ ê°¯ìˆ˜ë¥¼ ë¨¹ëŠ” ê²ƒì„ ì„±ê³µí•˜ì˜€ì„ë•Œ íƒ€ì„ì¹´ìš´íŠ¸
 
 	Star(int startX, int startY, int width, int height) {
 		pos = new Point(0, 0);
